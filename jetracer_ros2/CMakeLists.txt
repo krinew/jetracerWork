@@ -35,15 +35,15 @@ target_include_directories(jetracer PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-target_link_libraries(jetracer PUBLIC
-  rclcpp::rclcpp
-  geometry_msgs::geometry_msgs
-  nav_msgs::nav_msgs
-  sensor_msgs::sensor_msgs
-  std_msgs::std_msgs
-  tf2::tf2
-  tf2_ros::tf2_ros
-  tf2_geometry_msgs::tf2_geometry_msgs
+ament_target_dependencies(jetracer
+  rclcpp
+  geometry_msgs
+  nav_msgs
+  sensor_msgs
+  std_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 install(TARGETS jetracer
