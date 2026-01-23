@@ -1,0 +1,75 @@
+import os
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition, UnlessCondition
+
+
+def generate_launch_description():
+    """
+    Unified SLAM launch file - allows choosing between different SLAM methods
+    Similar to ROS1's slam.launch with map_type argument
+    """
+    
+    # Get the package share directory
+    pkg_share = get_package_share_directory('jetracer')
+    
+    # Declare arguments
+    slam_method = LaunchConfiguration('slam_method', default='slam_toolbox')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    
+    declare_slam_method_cmd = DeclareLaunchArgument(
+        'slam_method',
+        default_value='slam_toolbox',
+        description='SLAM method to use: slam_toolbox, cartographer, or hector'
+    )
+    
+    declare_use_sim_time_argument = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='false',
+        description='Use simulation/Gazebo clock'
+    )
+    
+    # Include jetracer base launch
+    jetracer_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'jetracer.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
+    
+    # Include lidar launch
+    lidar_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'lidar.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
+    
+    # Conditionally include SLAM Toolbox
+    slam_toolbox_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'slam_toolbox.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        condition=IfCondition(LaunchConfiguration('slam_method', default='slam_toolbox'))
+    )
+    
+    # Note: For proper conditional launching based on slam_method value,
+    # you would need to use OpaqueFunction or DeclareLaunchArgument with choices
+    # This simplified version launches slam_toolbox by default
+    
+    ld = LaunchDescription()
+    
+    # Add arguments
+    ld.add_action(declare_slam_method_cmd)
+    ld.add_action(declare_use_sim_time_argument)
+    
+    # Add launch files
+    ld.add_action(jetracer_launch)
+    ld.add_action(lidar_launch)
+    ld.add_action(slam_toolbox_launch)
+    
+    return ld

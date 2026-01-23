@@ -1,0 +1,13 @@
+jetracer:
+  ros__parameters:
+    port_name: "/dev/ttyACM0"
+    publish_odom_transform: true
+    linear_correction: 1.0
+    coefficient_a: -0.016073
+    coefficient_b: 0.176183
+    coefficient_c: -23.428084
+    coefficient_d: 1500.0
+    kp: 350
+    ki: 120
+    kd: 0
+    servo_bias: 0
