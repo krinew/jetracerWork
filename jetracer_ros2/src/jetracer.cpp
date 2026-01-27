@@ -248,7 +248,17 @@ private:
         tmp[8] = ((int16_t)(yaw * 1000) >> 8) & 0xff;
         tmp[9] = ((int16_t)(yaw * 1000)) & 0xff;
         tmp[10] = checksum(tmp, 10);
-        write(sp, buffer(tmp, 11));
+        
+        try {
+            write(sp, buffer(tmp, 11));
+            // DEBUG LOGGING
+            // char hex_buf[50];
+            // sprintf(hex_buf, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+            //     tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10]);
+            // RCLCPP_INFO(this->get_logger(), "Sent Hex: %s", hex_buf);
+        } catch (boost::system::system_error &e) {
+             RCLCPP_ERROR(this->get_logger(), "Failed to write to serial: %s", e.what());
+        }
     }
 
     // --- Serial Protocol Receiving ---
