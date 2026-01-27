@@ -61,11 +61,10 @@ def generate_launch_description():
             {
                 'use_sim_time': use_sim_time,
                 'video_device': camera_device,
-                'image_size': [image_width, image_height],
+                'image_size': [640, 480],  # Must be passed as a verified integer array, inputs often parsed as str
                 'camera_frame_id': 'camera_link',
                 'io_method': 'mmap',
-                'pixel_format': 'YUYV',
-                'framerate': framerate
+                'pixel_format': 'YUYV'
             }
         ],
         remappings=[

@@ -3,7 +3,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch.conditions import IfCondition, UnlessCondition
 
 
@@ -17,8 +17,8 @@ def generate_launch_description():
     pkg_share = get_package_share_directory('jetracer')
     
     # Declare arguments
-    slam_method = LaunchConfiguration('slam_method', default='slam_toolbox')
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    slam_method = LaunchConfiguration('slam_method')
+    use_sim_time = LaunchConfiguration('use_sim_time')
     
     declare_slam_method_cmd = DeclareLaunchArgument(
         'slam_method',
@@ -54,12 +54,26 @@ def generate_launch_description():
             os.path.join(pkg_share, 'launch', 'slam_toolbox.launch.py')
         ),
         launch_arguments={'use_sim_time': use_sim_time}.items(),
-        condition=IfCondition(LaunchConfiguration('slam_method', default='slam_toolbox'))
+        condition=IfCondition(PythonExpression(["'", slam_method, "' == 'slam_toolbox'"]))
     )
-    
-    # Note: For proper conditional launching based on slam_method value,
-    # you would need to use OpaqueFunction or DeclareLaunchArgument with choices
-    # This simplified version launches slam_toolbox by default
+
+    # Conditionally include Cartographer
+    cartographer_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'cartographer.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        condition=IfCondition(PythonExpression(["'", slam_method, "' == 'cartographer'"]))
+    )
+
+    # Conditionally include Hector SLAM
+    hector_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'hector.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        condition=IfCondition(PythonExpression(["'", slam_method, "' == 'hector'"]))
+    )
     
     ld = LaunchDescription()
     
@@ -71,5 +85,7 @@ def generate_launch_description():
     ld.add_action(jetracer_launch)
     ld.add_action(lidar_launch)
     ld.add_action(slam_toolbox_launch)
+    ld.add_action(cartographer_launch)
+    ld.add_action(hector_launch)
     
     return ld

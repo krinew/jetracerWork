@@ -159,6 +159,7 @@ private:
 
     void cmd_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
+        RCLCPP_INFO(this->get_logger(), "cmd_callback: linear.x=%f, angular.z=%f", msg->linear.x, msg->angular.z);
         x_ = msg->linear.x;
         y_ = msg->linear.x; // NOTE: Original code mapped linear.x to both x and y. Preserving behavior.
         yaw_ = msg->angular.z;

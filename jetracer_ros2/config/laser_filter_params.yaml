@@ -1,57 +1,11 @@
-# Laser Filter Parameters for JetRacer
-# Filters laser scan data to remove invalid readings
-
 scan_to_scan_filter_chain:
   ros__parameters:
     use_sim_time: false
-    
-    # Filter chain configuration
     filter_chain:
-      # Filter 1: Range filter - removes readings outside valid range
-      - name: range
-        type: laser_filters/LaserScanRangeFilter
+      - name: "range"
+        type: "laser_filters/LaserScanRangeFilter"
         params:
-          use_message_range_limits: false
-          lower_threshold: 0.2  # minimum valid range (meters)
-          upper_threshold: 8.0  # maximum valid range (meters)
+          lower_threshold: 0.2
+          upper_threshold: 8.0
           lower_replacement_value: .nan
           upper_replacement_value: .nan
-      
-      # Filter 2: Intensity filter - removes low intensity readings (optional)
-      - name: intensity
-        type: laser_filters/LaserScanIntensityFilter
-        params:
-          lower_threshold: 0
-          upper_threshold: 10000
-          disp_threshold: 0
-      
-      # Filter 3: Angular bounds filter - removes readings in specific angular ranges
-      # Useful for filtering out readings from robot body or known obstacles
-      - name: angular_bounds
-        type: laser_filters/LaserScanAngularBoundsFilter
-        params:
-          lower_angle: -3.14159  # radians (-180 degrees)
-          upper_angle: 3.14159   # radians (180 degrees)
-      
-      # Filter 4: Box filter - removes readings in a rectangular area
-      # Useful for filtering robot body parts
-      - name: box
-        type: laser_filters/LaserScanBoxFilter
-        params:
-          box_frame: base_footprint
-          max_x: 0.25
-          max_y: 0.25
-          max_z: 0.3
-          min_x: -0.25
-          min_y: -0.25
-          min_z: 0.0
-          invert: false
-      
-      # Filter 5: Speckle filter - removes isolated points (noise)
-      - name: speckle
-        type: laser_filters/LaserScanSpeckleFilter
-        params:
-          filter_type: 1  # 0 = Distance, 1 = RadiusOutlier
-          max_range: 8.0
-          max_range_difference: 0.1
-          filter_window: 2
