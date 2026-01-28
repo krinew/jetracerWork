@@ -60,6 +60,11 @@ public:
         this->get_parameter("publish_odom_transform", publish_odom_transform_);
 
         // 2. Initialize Serial Port
+        RCLCPP_INFO(this->get_logger(), "============================================");
+        RCLCPP_INFO(this->get_logger(), "[INIT] JetRacer ROS2 Driver Starting...");
+        RCLCPP_INFO(this->get_logger(), "============================================");
+        RCLCPP_INFO(this->get_logger(), "[SERIAL] Attempting to open port: %s", port_name_.c_str());
+        
         try
         {
             sp.open(port_name_);
@@ -68,11 +73,16 @@ public:
             sp.set_option(serial_port::parity(serial_port::parity::none));
             sp.set_option(serial_port::stop_bits(serial_port::stop_bits::one));
             sp.set_option(serial_port::character_size(8));
-            RCLCPP_INFO(this->get_logger(), "Serial port opened at %s", port_name_.c_str());
+            RCLCPP_INFO(this->get_logger(), "[SERIAL] ✓ Port opened successfully!");
+            RCLCPP_INFO(this->get_logger(), "[SERIAL] Settings: 115200 baud, 8N1, no flow control");
+            serial_connected_ = true;
         }
         catch (boost::system::system_error &e)
         {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open serial port: %s", e.what());
+            RCLCPP_ERROR(this->get_logger(), "[SERIAL] ✗ FAILED to open serial port!");
+            RCLCPP_ERROR(this->get_logger(), "[SERIAL] Error: %s", e.what());
+            RCLCPP_ERROR(this->get_logger(), "[SERIAL] Check: ls -la %s", port_name_.c_str());
+            serial_connected_ = false;
         }
 
         // 3. Setup Publishers
@@ -135,9 +145,24 @@ private:
     double yaw_ = 0.0;
     rclcpp::Time cmd_time_;
     bool publish_odom_transform_;
+    
+    // Debug counters and flags
+    bool serial_connected_ = false;
+    int cmd_received_count_ = 0;
+    int velocity_sent_count_ = 0;
+    int frames_received_count_ = 0;
+    int checksum_errors_ = 0;
+    int write_errors_ = 0;
 
     void sendInitialConfig()
     {
+        RCLCPP_INFO(this->get_logger(), "[CONFIG] Sending initial configuration...");
+        
+        if (!serial_connected_) {
+            RCLCPP_WARN(this->get_logger(), "[CONFIG] ✗ Serial not connected, skipping config send");
+            return;
+        }
+        
         std::this_thread::sleep_for(20ms);
 
         // Read params
@@ -146,6 +171,8 @@ private:
         float c = this->get_parameter("coefficient_c").as_double();
         float d = this->get_parameter("coefficient_d").as_double();
 
+        RCLCPP_INFO(this->get_logger(), "[CONFIG] Steering Coefficients:");
+        RCLCPP_INFO(this->get_logger(), "[CONFIG]   a=%.6f b=%.6f c=%.6f d=%.1f", a, b, c, d);
         SetCoefficient(a, b, c, d);
 
         int p = this->get_parameter("kp").as_int();
@@ -154,27 +181,57 @@ private:
         int servo_bias = this->get_parameter("servo_bias").as_int();
         float linear_correction = this->get_parameter("linear_correction").as_double();
 
+        RCLCPP_INFO(this->get_logger(), "[CONFIG] PID Parameters:");
+        RCLCPP_INFO(this->get_logger(), "[CONFIG]   Kp=%d Ki=%d Kd=%d", p, i, kd);
+        RCLCPP_INFO(this->get_logger(), "[CONFIG]   linear_correction=%.3f servo_bias=%d", linear_correction, servo_bias);
         SetParams(p, i, kd, linear_correction, servo_bias);
+        
+        RCLCPP_INFO(this->get_logger(), "[CONFIG] ✓ Initial configuration sent");
     }
 
     void cmd_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        RCLCPP_INFO(this->get_logger(), "cmd_callback: linear.x=%f, angular.z=%f", msg->linear.x, msg->angular.z);
+        cmd_received_count_++;
+        RCLCPP_INFO(this->get_logger(), "[CMD_VEL #%d] Received: linear.x=%.3f, angular.z=%.3f", 
+                    cmd_received_count_, msg->linear.x, msg->angular.z);
+        
         x_ = msg->linear.x;
-        y_ = msg->linear.x; // NOTE: Original code mapped linear.x to both x and y. Preserving behavior.
+        y_ = msg->linear.x; // IMPORTANT: Match ROS1 behavior - both x and y use linear.x!
         yaw_ = msg->angular.z;
         cmd_time_ = this->now();
+        
+        // Log converted values that will be sent
+        int16_t x_encoded = (int16_t)(x_ * 1000);
+        int16_t yaw_encoded = (int16_t)(yaw_ * 1000);
+        RCLCPP_DEBUG(this->get_logger(), "[CMD_VEL] Encoded: x=%d (0x%04X), yaw=%d (0x%04X)", 
+                     x_encoded, x_encoded & 0xFFFF, yaw_encoded, yaw_encoded & 0xFFFF);
     }
 
     void control_loop()
     {
+        static int loop_count = 0;
+        loop_count++;
+        
         // Watchdog: If no command for 1 second, stop.
-        if ((this->now() - cmd_time_).seconds() > 1.0)
+        double time_since_cmd = (this->now() - cmd_time_).seconds();
+        if (time_since_cmd > 1.0)
         {
+            if (x_ != 0.0 || yaw_ != 0.0) {
+                RCLCPP_WARN(this->get_logger(), "[WATCHDOG] No cmd_vel for %.1fs, stopping motors", time_since_cmd);
+            }
             x_ = 0.0;
             y_ = 0.0;
             yaw_ = 0.0;
         }
+        
+        // Log status every 50 loops (1 second at 50Hz)
+        if (loop_count % 50 == 0) {
+            RCLCPP_INFO(this->get_logger(), "[STATUS] Serial:%s | Cmds:%d | Sent:%d | Recv:%d | ChkErr:%d | WrErr:%d",
+                        serial_connected_ ? "OK" : "FAIL",
+                        cmd_received_count_, velocity_sent_count_, 
+                        frames_received_count_, checksum_errors_, write_errors_);
+        }
+        
         SetVelocity(x_, y_, yaw_);
     }
 
@@ -236,6 +293,10 @@ private:
 
     void SetVelocity(double x, double y, double yaw)
     {
+        if (!serial_connected_) {
+            return; // Don't spam errors, just skip
+        }
+        
         uint8_t tmp[11];
         tmp[0] = head1;
         tmp[1] = head2;
@@ -251,13 +312,19 @@ private:
         
         try {
             write(sp, buffer(tmp, 11));
-            // DEBUG LOGGING
-            // char hex_buf[50];
-            // sprintf(hex_buf, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
-            //     tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10]);
-            // RCLCPP_INFO(this->get_logger(), "Sent Hex: %s", hex_buf);
+            velocity_sent_count_++;
+            
+            // Only log non-zero velocities or every 50th packet
+            if (x != 0.0 || yaw != 0.0 || velocity_sent_count_ % 50 == 0) {
+                char hex_buf[50];
+                sprintf(hex_buf, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+                    tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10]);
+                RCLCPP_DEBUG(this->get_logger(), "[TX #%d] x=%.3f y=%.3f yaw=%.3f | Hex: %s", 
+                            velocity_sent_count_, x, y, yaw, hex_buf);
+            }
         } catch (boost::system::system_error &e) {
-             RCLCPP_ERROR(this->get_logger(), "Failed to write to serial: %s", e.what());
+            write_errors_++;
+            RCLCPP_ERROR(this->get_logger(), "[TX ERROR #%d] Failed to write: %s", write_errors_, e.what());
         }
     }
 
@@ -283,9 +350,11 @@ private:
         rclcpp::Time now_time, last_time;
         last_time = this->now();
 
-        RCLCPP_INFO(this->get_logger(), "Start receive message loop");
+        RCLCPP_INFO(this->get_logger(), "[RX] ✓ Serial receive thread started");
+        RCLCPP_INFO(this->get_logger(), "[RX] Waiting for data from microcontroller...");
+        RCLCPP_INFO(this->get_logger(), "[RX] Expected frame: [0xAA 0x55 SIZE TYPE DATA... CHECKSUM]");
 
-        while (rclcpp::ok()) // Using library ok() is thread safe enough typically, or check atomic bool
+        while (rclcpp::ok())
         {
             try
             {
@@ -293,28 +362,65 @@ private:
                 {
                 case State_Head1:
                     read(sp, buffer(&data[0], 1));
-                    state = (data[0] == head1 ? State_Head2 : State_Head1);
+                    if (data[0] == head1) {
+                        state = State_Head2;
+                    } else {
+                        // Log unexpected bytes (but not too often)
+                        static int unexpected_count = 0;
+                        unexpected_count++;
+                        if (unexpected_count <= 10 || unexpected_count % 100 == 0) {
+                            RCLCPP_DEBUG(this->get_logger(), "[RX] Unexpected byte: 0x%02X (waiting for 0xAA)", data[0]);
+                        }
+                    }
                     break;
                 case State_Head2:
                     read(sp, buffer(&data[1], 1));
-                    state = (data[1] == head2 ? State_Size : State_Head1);
+                    if (data[1] == head2) {
+                        state = State_Size;
+                        RCLCPP_DEBUG(this->get_logger(), "[RX] Frame header detected (0xAA 0x55)");
+                    } else {
+                        RCLCPP_DEBUG(this->get_logger(), "[RX] Invalid head2: 0x%02X (expected 0x55)", data[1]);
+                        state = State_Head1;
+                    }
                     break;
                 case State_Size:
                     read(sp, buffer(&data[2], 1));
                     frame_size = data[2];
-                    state = State_Data;
+                    RCLCPP_DEBUG(this->get_logger(), "[RX] Frame size: %d bytes", frame_size);
+                    if (frame_size > 50 || frame_size < 5) {
+                        RCLCPP_WARN(this->get_logger(), "[RX] Invalid frame size: %d, resetting", frame_size);
+                        state = State_Head1;
+                    } else {
+                        state = State_Data;
+                    }
                     break;
                 case State_Data:
-                    read(sp, buffer(&data[3], frame_size - 4)); // Read remaining data
+                    read(sp, buffer(&data[3], frame_size - 4));
+                    RCLCPP_DEBUG(this->get_logger(), "[RX] Received %d data bytes, type=0x%02X", frame_size - 4, data[3]);
                     state = State_CheckSum;
                     break;
                 case State_CheckSum:
                     read(sp, buffer(&data[frame_size - 1], 1));
                     frame_sum = checksum(data, frame_size - 1);
-                    state = (data[frame_size - 1] == frame_sum) ? State_Handle : State_Head1;
+                    if (data[frame_size - 1] == frame_sum) {
+                        state = State_Handle;
+                    } else {
+                        checksum_errors_++;
+                        RCLCPP_WARN(this->get_logger(), "[RX] Checksum ERROR #%d: got 0x%02X, expected 0x%02X", 
+                                    checksum_errors_, data[frame_size - 1], frame_sum);
+                        state = State_Head1;
+                    }
                     break;
                 case State_Handle:
+                    frames_received_count_++;
                     now_time = this->now();
+                    
+                    // Log first few frames and then periodically
+                    if (frames_received_count_ <= 5 || frames_received_count_ % 100 == 0) {
+                        RCLCPP_INFO(this->get_logger(), "[RX #%d] ✓ Valid frame received (size=%d)", 
+                                    frames_received_count_, frame_size);
+                    }
+                    
                     processData(data, now_time, last_time, imu_list, odom_list);
                     last_time = now_time;
                     state = State_Head1;
@@ -323,10 +429,12 @@ private:
             }
             catch (boost::system::system_error &e)
             {
-                // Serial port closed or error
+                RCLCPP_ERROR(this->get_logger(), "[RX] Serial read error: %s", e.what());
+                RCLCPP_ERROR(this->get_logger(), "[RX] Thread exiting - serial connection lost?");
                 break;
             }
         }
+        RCLCPP_WARN(this->get_logger(), "[RX] Receive thread ended");
     }
 
     void processData(uint8_t *data, rclcpp::Time now_time, rclcpp::Time last_time, double *imu_list, double *odom_list)
@@ -424,14 +532,27 @@ private:
 
         // --- Motor Debug Pubs ---
         std_msgs::msg::Int32 msg_int;
-        msg_int.data = ((int16_t)(data[34] * 256 + data[35]));
+        int16_t lvel = ((int16_t)(data[34] * 256 + data[35]));
+        int16_t rvel = ((int16_t)(data[36] * 256 + data[37]));
+        int16_t lset = ((int16_t)(data[38] * 256 + data[39]));
+        int16_t rset = ((int16_t)(data[40] * 256 + data[41]));
+        
+        msg_int.data = lvel;
         lvel_pub_->publish(msg_int);
-        msg_int.data = ((int16_t)(data[36] * 256 + data[37]));
+        msg_int.data = rvel;
         rvel_pub_->publish(msg_int);
-        msg_int.data = ((int16_t)(data[38] * 256 + data[39]));
+        msg_int.data = lset;
         lset_pub_->publish(msg_int);
-        msg_int.data = ((int16_t)(data[40] * 256 + data[41]));
+        msg_int.data = rset;
         rset_pub_->publish(msg_int);
+        
+        // Log motor values periodically
+        if (frames_received_count_ % 50 == 0) {
+            RCLCPP_DEBUG(this->get_logger(), "[MOTOR] L_vel=%d R_vel=%d | L_set=%d R_set=%d", 
+                        lvel, rvel, lset, rset);
+            RCLCPP_DEBUG(this->get_logger(), "[ODOM] x=%.3f y=%.3f yaw=%.3f", 
+                        odom_list[0], odom_list[1], odom_list[2]);
+        }
     }
 };
 
