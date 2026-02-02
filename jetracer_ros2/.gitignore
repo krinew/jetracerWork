@@ -1,0 +1,10 @@
+build/
+install/
+log/
+COLCON_IGNORE
+# Python
+__pycache__/
+*.py[cod]
+# C++
+*.o
+*.so
