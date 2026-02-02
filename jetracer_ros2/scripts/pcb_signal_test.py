@@ -9,6 +9,21 @@ import time
 import struct
 import sys
 
+# Logger class to redirect output to both console and file
+class Logger(object):
+    def __init__(self):
+        self.terminal = sys.stdout
+        self.log = open("pcb_test_log.txt", "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush() 
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
 # Configuration
 PORT = "/dev/ttyACM0"  # Change if needed
 BAUD_RATES = [115200, 9600, 57600, 38400, 19200]
@@ -227,6 +242,9 @@ def continuous_read(ser, duration=5):
         print("No data received from PCB")
 
 def main():
+    # Redirect stdout to logger
+    sys.stdout = Logger()
+    
     print("="*60)
     print("JetRacer ROS AI Kit - PCB Signal Diagnostic Tool")
     print("="*60)
