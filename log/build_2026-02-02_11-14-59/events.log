@@ -1,0 +1,40 @@
+[0.000000] (-) TimerEvent: {}
+[0.002923] (jetracer_ros2) JobQueued: {'identifier': 'jetracer_ros2', 'dependencies': OrderedDict()}
+[0.003163] (jetracer_ros2) JobStarted: {'identifier': 'jetracer_ros2'}
+[0.024151] (jetracer_ros2) JobProgress: {'identifier': 'jetracer_ros2', 'progress': 'cmake'}
+[0.042776] (jetracer_ros2) Command: {'cmd': ['/opt/venv/bin/cmake', '/jetracer_ws/src/jetracerWork/jetracer_ros2', '-DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer_ros2'], 'cwd': '/jetracer_ws/src/jetracerWork/build/jetracer_ros2', 'env': OrderedDict({'TWINE_PASSWORD': 'NvidiaJetson24', 'OPENBLAS_CORETYPE': 'ARMV8', 'PYTHONFAULTHANDLER': '1', 'CUDACXX': '/usr/local/cuda/bin/nvcc', 'PYTHONIOENCODING': 'utf-8', 'PIP_ROOT_USER_ACTION': 'ignore', 'LANGUAGE': 'en_US:en', 'PIP_TRUSTED_HOST': '', 'PIP_DEFAULT_TIMEOUT': '100', 'PYTHONHASHSEED': 'random', 'HOSTNAME': 'nano-4gb-jp451', 'TWINE_REPOSITORY_URL': 'http://jao-51/jp6/cu128', 'TAR_INDEX_URL': 'https://apt.jetson-ai-lab.dev/jp6/cu128/24.04', 'SHLVL': '2', 'LD_LIBRARY_PATH': '/usr/local/cuda/compat:/usr/local/cuda/lib64:', 'HOME': '/root', 'OLDPWD': '/jetracer_ws', 'CMAKE_CUDA_COMPILER': '/usr/local/cuda/bin/nvcc', 'TORCH_NVCC_FLAGS': '-Xfatbin -compress-all', 'PYTHONUNBUFFERED': '1', 'ROS_PYTHON_VERSION': '3', 'CUDA_TOOLKIT_ROOT_DIR': '/usr/local/cuda', 'CUDA_NVCC_EXECUTABLE': '/usr/local/cuda/bin/nvcc', 'CUDNN_LIB_PATH': '/usr/lib/aarch64-linux-gnu', 'CUDAARCHS': '87', 'PIP_CACHE_PURGE': 'true', 'ROS_DISTRO': 'jazzy', 'SCP_UPLOAD_PASS': 'nvidia', 'PIP_DISABLE_PIP_VERSION_CHECK': 'on', 'CUDA_ARCHITECTURES': '87', '_': '/usr/bin/colcon', 'NVIDIA_DRIVER_CAPABILITIES': 'all', 'TERM': 'screen', 'TWINE_USERNAME': 'jp6', 'PATH': '/opt/venv/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'NUMPY_PACKAGE': 'numpy', 'PIP_INDEX_URL': 'https://pypi.jetson-ai-lab.dev/jp6/cu128', 'PIP_NO_CACHE_DIR': 'off', 'SCP_UPLOAD_USER': 'nvidia', 'LANG': 'en_US.UTF-8', 'STY': '54.work', 'RMW_IMPLEMENTATION': 'rmw_fastrtps_cpp', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=00:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.avif=01;35:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:*~=00;90:*#=00;90:*.bak=00;90:*.crdownload=00;90:*.dpkg-dist=00;90:*.dpkg-new=00;90:*.dpkg-old=00;90:*.dpkg-tmp=00;90:*.old=00;90:*.orig=00;90:*.part=00;90:*.rej=00;90:*.rpmnew=00;90:*.rpmorig=00;90:*.rpmsave=00;90:*.swp=00;90:*.tmp=00;90:*.ucf-dist=00;90:*.ucf-new=00;90:*.ucf-old=00;90:', 'ROS_ROOT': '/opt/ros/jazzy', 'SCP_UPLOAD_URL': 'jao-51:/dist/jp6/cu128/24.04', 'TWINE_NON_INTERACTIVE': '1', 'DEBIAN_FRONTEND': 'noninteractive', 'SHELL': '/bin/bash', 'PYTHON_VERSION': '3.12', 'OPENCV_VERSION': '4.11.0', 'WINDOW': '0', 'NVCC_PATH': '/usr/local/cuda/bin/nvcc', 'OPENCV_URL': '', 'PWD': '/jetracer_ws/src/jetracerWork/build/jetracer_ros2', 'LC_ALL': 'en_US.UTF-8', 'CUDA_HOME': '/usr/local/cuda', 'TERMCAP': 'SC|screen|VT 100/ANSI X3.64 virtual terminal:DO=\\E[%dB:LE=\\E[%dD:RI=\\E[%dC:UP=\\E[%dA:bs:bt=\\E[Z:cd=\\E[J:ce=\\E[K:cl=\\E[H\\E[J:cm=\\E[%i%d;%dH:ct=\\E[3g:do=^J:nd=\\E[C:pt:rc=\\E8:rs=\\Ec:sc=\\E7:st=\\EH:up=\\EM:le=^H:bl=^G:cr=^M:it#8:ho=\\E[H:nw=\\EE:ta=^I:is=\\E)0:li#30:co#120:am:xn:xv:LP:sr=\\EM:al=\\E[L:AL=\\E[%dL:cs=\\E[%i%d;%dr:dl=\\E[M:DL=\\E[%dM:dc=\\E[P:DC=\\E[%dP:im=\\E[4h:ei=\\E[4l:mi:IC=\\E[%d@:ks=\\E[?1h\\E=:ke=\\E[?1l\\E>:vi=\\E[?25l:ve=\\E[34h\\E[?25h:vs=\\E[34l:ti=\\E[?1049h:te=\\E[?1049l:us=\\E[4m:ue=\\E[24m:so=\\E[3m:se=\\E[23m:mb=\\E[5m:md=\\E[1m:mh=\\E[2m:mr=\\E[7m:me=\\E[m:ms:Co#8:pa#64:AF=\\E[3%dm:AB=\\E[4%dm:op=\\E[39;49m:AX:vb=\\Eg:G0:as=\\E(0:ae=\\E(B:ac=\\140\\140aaffggjjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~..--++,,hhII00:po=\\E[5i:pf=\\E[4i:Km=\\E[<:k0=\\E[10~:k1=\\EOP:k2=\\EOQ:k3=\\EOR:k4=\\EOS:k5=\\E[15~:k6=\\E[17~:k7=\\E[18~:k8=\\E[19~:k9=\\E[20~:k;=\\E[21~:F1=\\E[23~:F2=\\E[24~:kB=\\E[Z:kh=\\E[1~:@1=\\E[1~:kH=\\E[4~:@7=\\E[4~:kN=\\E[6~:kP=\\E[5~:kI=\\E[2~:kD=\\E[3~:ku=\\EOA:kd=\\EOB:kr=\\EOC:kl=\\EOD:km:', 'CUDNN_LIB_INCLUDE_PATH': '/usr/include', 'PYTHONPATH': '/usr/lib/python3/dist-packages:', 'NVIDIA_VISIBLE_DEVICES': 'all', 'COLCON': '1', 'CUDA_BIN_PATH': '/usr/local/cuda/bin'}), 'shell': False}
+[0.099355] (-) TimerEvent: {}
+[0.199964] (-) TimerEvent: {}
+[0.300599] (-) TimerEvent: {}
+[0.401157] (-) TimerEvent: {}
+[0.501712] (-) TimerEvent: {}
+[0.602262] (-) TimerEvent: {}
+[0.702834] (-) TimerEvent: {}
+[0.770736] (jetracer_ros2) StderrLine: {'line': b'\x1b[31mCMake Error at CMakeLists.txt:9 (find_package):\n'}
+[0.771501] (jetracer_ros2) StderrLine: {'line': b'  By not providing "Findament_cmake.cmake" in CMAKE_MODULE_PATH this project\n'}
+[0.771950] (jetracer_ros2) StderrLine: {'line': b'  has asked CMake to find a package configuration file provided by\n'}
+[0.772692] (jetracer_ros2) StderrLine: {'line': b'  "ament_cmake", but CMake did not find one.\n'}
+[0.773089] (jetracer_ros2) StderrLine: {'line': b'\n'}
+[0.773502] (jetracer_ros2) StderrLine: {'line': b'  Could not find a package configuration file provided by "ament_cmake" with\n'}
+[0.773915] (jetracer_ros2) StderrLine: {'line': b'  any of the following names:\n'}
+[0.774301] (jetracer_ros2) StderrLine: {'line': b'\n'}
+[0.774687] (jetracer_ros2) StderrLine: {'line': b'    ament_cmakeConfig.cmake\n'}
+[0.775068] (jetracer_ros2) StderrLine: {'line': b'    ament_cmake-config.cmake\n'}
+[0.775849] (jetracer_ros2) StderrLine: {'line': b'\n'}
+[0.776967] (jetracer_ros2) StderrLine: {'line': b'  Add the installation prefix of "ament_cmake" to CMAKE_PREFIX_PATH or set\n'}
+[0.777953] (jetracer_ros2) StderrLine: {'line': b'  "ament_cmake_DIR" to a directory containing one of the above files.  If\n'}
+[0.779437] (jetracer_ros2) StderrLine: {'line': b'  "ament_cmake" provides a separate development package or SDK, be sure it\n'}
+[0.779971] (jetracer_ros2) StderrLine: {'line': b'  has been installed.\n'}
+[0.780894] (jetracer_ros2) StderrLine: {'line': b'\n'}
+[0.781402] (jetracer_ros2) StderrLine: {'line': b'\x1b[0m\n'}
+[0.781762] (jetracer_ros2) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.782280] (jetracer_ros2) CommandEnded: {'returncode': 1}
+[0.803032] (-) TimerEvent: {}
+[0.903603] (-) TimerEvent: {}
+[1.004397] (-) TimerEvent: {}
+[1.104895] (-) TimerEvent: {}
+[1.205454] (-) TimerEvent: {}
+[1.306003] (-) TimerEvent: {}
+[1.406574] (-) TimerEvent: {}
+[1.463499] (jetracer_ros2) JobEnded: {'identifier': 'jetracer_ros2', 'rc': 1}
+[1.474724] (-) EventReactorShutdown: {}

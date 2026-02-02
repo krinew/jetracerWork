@@ -1,0 +1,2 @@
+Invoking command in '/jetracer_ws/src/jetracerWork/build/jetracer': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer
+Invoked command in '/jetracer_ws/src/jetracerWork/build/jetracer' returned '1': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer

@@ -1,0 +1,41 @@
+[0.043s] Invoking command in '/jetracer_ws/src/jetracerWork/build/jetracer': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer
+[1.597s] [0mCMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[1.597s]   Compatibility with CMake < 3.10 will be removed from a future version of
+[1.598s]   CMake.
+[1.598s] 
+[1.598s]   Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+[1.599s]   to tell CMake that the project requires at least <min> but has been updated
+[1.599s]   to work with policies introduced by <max> or earlier.
+[1.600s] 
+[1.600s] [0m
+[3.531s] -- The C compiler identification is GNU 13.3.0
+[4.856s] -- The CXX compiler identification is GNU 13.3.0
+[4.898s] -- Detecting C compiler ABI info
+[5.139s] -- Detecting C compiler ABI info - done
+[5.220s] -- Check for working C compiler: /usr/bin/cc - skipped
+[5.221s] -- Detecting C compile features
+[5.224s] -- Detecting C compile features - done
+[5.268s] -- Detecting CXX compiler ABI info
+[5.616s] -- Detecting CXX compiler ABI info - done
+[5.703s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[5.704s] -- Detecting CXX compile features
+[5.708s] -- Detecting CXX compile features - done
+[5.792s] [31mCMake Error at CMakeLists.txt:10 (find_package):
+[5.793s]   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+[5.793s]   asked CMake to find a package configuration file provided by "catkin", but
+[5.794s]   CMake did not find one.
+[5.794s] 
+[5.794s]   Could not find a package configuration file provided by "catkin" with any
+[5.795s]   of the following names:
+[5.797s] 
+[5.798s]     catkinConfig.cmake
+[5.800s]     catkin-config.cmake
+[5.801s] 
+[5.802s]   Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+[5.803s]   "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+[5.804s]   provides a separate development package or SDK, be sure it has been
+[5.805s]   installed.
+[5.805s] 
+[5.805s] [0m
+[5.806s] -- Configuring incomplete, errors occurred!
+[5.809s] Invoked command in '/jetracer_ws/src/jetracerWork/build/jetracer' returned '1': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer

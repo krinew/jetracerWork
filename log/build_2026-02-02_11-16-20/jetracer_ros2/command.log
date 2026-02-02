@@ -1,0 +1,2 @@
+Invoking command in '/jetracer_ws/src/jetracerWork/build/jetracer_ros2': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros2 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer_ros2
+Invoked command in '/jetracer_ws/src/jetracerWork/build/jetracer_ros2' returned '1': /opt/venv/bin/cmake /jetracer_ws/src/jetracerWork/jetracer_ros2 -DCMAKE_INSTALL_PREFIX=/jetracer_ws/src/jetracerWork/install/jetracer_ros2
