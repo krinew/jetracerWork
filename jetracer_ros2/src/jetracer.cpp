@@ -163,7 +163,8 @@ private:
             return;
         }
         
-        std::this_thread::sleep_for(20ms);
+        // Wait for PCB to be ready after serial open
+        std::this_thread::sleep_for(100ms);
 
         // Read params
         float a = this->get_parameter("coefficient_a").as_double();
@@ -175,6 +176,11 @@ private:
         RCLCPP_INFO(this->get_logger(), "[CONFIG]   a=%.6f b=%.6f c=%.6f d=%.1f", a, b, c, d);
         SetCoefficient(a, b, c, d);
 
+        // Give PCB time to process coefficient command before sending params
+        std::this_thread::sleep_for(50ms);
+        
+        // NOTE: ROS1 code only sends SetCoefficient at startup, SetParams is sent via dynamic_reconfigure
+        // We keep SetParams here for convenience but add delay
         int p = this->get_parameter("kp").as_int();
         int i = this->get_parameter("ki").as_int();
         int kd = this->get_parameter("kd").as_int();
@@ -186,6 +192,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "[CONFIG]   linear_correction=%.3f servo_bias=%d", linear_correction, servo_bias);
         SetParams(p, i, kd, linear_correction, servo_bias);
         
+        std::this_thread::sleep_for(50ms);
         RCLCPP_INFO(this->get_logger(), "[CONFIG] ✓ Initial configuration sent");
     }
 
@@ -314,13 +321,15 @@ private:
             write(sp, buffer(tmp, 11));
             velocity_sent_count_++;
             
-            // Only log non-zero velocities or every 50th packet
-            if (x != 0.0 || yaw != 0.0 || velocity_sent_count_ % 50 == 0) {
+            // Log ALL non-zero velocities and every 100th zero velocity
+            if (x != 0.0 || yaw != 0.0) {
                 char hex_buf[50];
                 sprintf(hex_buf, "%02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
                     tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], tmp[5], tmp[6], tmp[7], tmp[8], tmp[9], tmp[10]);
-                RCLCPP_DEBUG(this->get_logger(), "[TX #%d] x=%.3f y=%.3f yaw=%.3f | Hex: %s", 
+                RCLCPP_INFO(this->get_logger(), "[TX #%d] MOVING x=%.3f y=%.3f yaw=%.3f | Hex: %s", 
                             velocity_sent_count_, x, y, yaw, hex_buf);
+            } else if (velocity_sent_count_ % 100 == 0) {
+                RCLCPP_DEBUG(this->get_logger(), "[TX #%d] idle (x=0, yaw=0)", velocity_sent_count_);
             }
         } catch (boost::system::system_error &e) {
             write_errors_++;
@@ -546,11 +555,17 @@ private:
         msg_int.data = rset;
         rset_pub_->publish(msg_int);
         
+        // Log motor setpoints when non-zero (indicates PCB received velocity command)
+        if (lset != 0 || rset != 0) {
+            RCLCPP_INFO(this->get_logger(), "[MOTOR] PCB has setpoints! L_set=%d R_set=%d (L_vel=%d R_vel=%d)", 
+                        lset, rset, lvel, rvel);
+        }
+        
         // Log motor values periodically
-        if (frames_received_count_ % 50 == 0) {
-            RCLCPP_DEBUG(this->get_logger(), "[MOTOR] L_vel=%d R_vel=%d | L_set=%d R_set=%d", 
+        if (frames_received_count_ % 100 == 0) {
+            RCLCPP_INFO(this->get_logger(), "[MOTOR] L_vel=%d R_vel=%d | L_set=%d R_set=%d", 
                         lvel, rvel, lset, rset);
-            RCLCPP_DEBUG(this->get_logger(), "[ODOM] x=%.3f y=%.3f yaw=%.3f", 
+            RCLCPP_INFO(this->get_logger(), "[ODOM] pos=(%.3f, %.3f) yaw=%.3f", 
                         odom_list[0], odom_list[1], odom_list[2]);
         }
     }
