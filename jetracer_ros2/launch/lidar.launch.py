@@ -27,9 +27,10 @@ def generate_launch_description():
 
         # RPLidar Node
         # Note: Ensure 'rplidar_ros' package is installed in ROS 2
+        # Use 'rplidar_composition' if 'rplidar_node' is missing (ROS 2 Jazzy update)
         Node(
             package='rplidar_ros',
-            executable='rplidar_node',
+            executable='rplidar_composition',
             name='rplidar_node',
             parameters=[{
                 'serial_port': serial_port,
