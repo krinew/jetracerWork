@@ -61,10 +61,10 @@ def generate_launch_description():
             {
                 'use_sim_time': use_sim_time,
                 'video_device': camera_device,
-                'image_size': [640, 480],  # Must be passed as a verified integer array, inputs often parsed as str
+                'image_size': [640, 480],  # Matched to ROS1 launch default
                 'camera_frame_id': 'camera_link',
                 'io_method': 'mmap',
-                'pixel_format': 'YUYV'
+                'pixel_format': 'UYVY' # Forced YUYV as per ROS1 behavior
             }
         ],
         remappings=[
