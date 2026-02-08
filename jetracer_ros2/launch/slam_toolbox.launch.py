@@ -47,6 +47,19 @@ def generate_launch_description():
             ('/scan', '/scan')
         ]
     )
+
+    # Lifecycle Manager to automatically start slam_toolbox
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_slam',
+        output='screen',
+        parameters=[
+            {'use_sim_time': use_sim_time},
+            {'autostart': True},
+            {'node_names': ['slam_toolbox']}
+        ]
+    )
     
     ld = LaunchDescription()
     
@@ -56,5 +69,6 @@ def generate_launch_description():
     
     # Add nodes
     ld.add_action(slam_toolbox_node)
+    ld.add_action(lifecycle_manager)
     
     return ld
