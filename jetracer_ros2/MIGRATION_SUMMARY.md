@@ -7,10 +7,11 @@
 
 ### 📁 Files Created/Updated
 
-#### Python Scripts (2 files)
+#### Python Scripts (3 files)
 
 1. ✅ `scripts/odom_ekf.py` - Updated with parameters and rclpy
 2. ✅ `scripts/calibrate_linear.py` - Fully migrated with parameter callbacks
+3. ✅ `scripts/web_camera_stream.py` - **NEW** Browser MJPEG camera stream (for SSH/headless use)
 
 #### Launch Files (11 files)
 
@@ -27,14 +28,15 @@
 11. ✅ `launch/calibrate_linear.launch.py` - **NEW**
 12. ✅ `launch/csi_camera.launch.py` - **NEW**
 
-#### Configuration Files (3 files)
+#### Configuration Files (7 files)
 
 1. ✅ `config/jetracer.yaml` - Already existed
 2. ✅ `config/nav2_params.yaml` - Already existed
 3. ✅ `config/slam_toolbox_params.yaml` - **NEW**
 4. ✅ `config/amcl_params.yaml` - **NEW**
 5. ✅ `config/laser_filter_params.yaml` - **NEW**
-6. ✅ `config/cartographer/jetracer.lua` - Already exists (ROS1 compatible)
+6. ✅ `config/cartographer/jetracer.lua` - **NEW** (copied from ROS1)
+7. ✅ `config/camera_calibration/cam_640x480.yaml` - **NEW** (copied from ROS1)
 
 #### Package Files (3 files)
 
@@ -61,7 +63,7 @@
 | **Move Base**     | ✅ Replaced | Now uses Nav2              |
 | **Laser Filter**  | ✅ Complete | New launch + config        |
 | **LiDAR**         | ✅ Complete | Already migrated           |
-| **Camera**        | ✅ Complete | V4L2 camera support        |
+| **Camera**        | ✅ Complete | gscam2 with nvarguscamerasrc (matches ROS1 gscam pipeline) |
 | **Audio/TTS**     | ⚠️ Optional | Not migrated (rarely used) |
 
 ### Overall: **95% Complete**
@@ -111,7 +113,10 @@ sudo apt install -y \
   ros-jazzy-robot-localization \
   ros-jazzy-laser-filters \
   ros-jazzy-rplidar-ros \
-  ros-jazzy-v4l2-camera
+  ros-jazzy-gscam2 \
+  ros-jazzy-image-transport \
+  ros-jazzy-compressed-image-transport \
+  ros-jazzy-teleop-twist-keyboard
 ```
 
 ---
@@ -121,7 +126,7 @@ sudo apt install -y \
 ### Build
 
 ```bash
-cd ~/ros2_ws
+cd ~/jetracerWork
 colcon build --packages-select jetracer
 source install/setup.bash
 ```

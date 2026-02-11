@@ -8,90 +8,61 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     """
-    Launch file for CSI camera using gscam2 (ROS 2 port of gscam).
-    Mirrors the original ROS1 csi_camera.launch using nvarguscamerasrc pipeline.
+    Launch file for CSI camera on Jetson.
+    Uses a custom Python node (csi_camera_node.py) that captures from the
+    nvarguscamerasrc GStreamer pipeline via OpenCV — same pipeline as the
+    original ROS1 gscam launch, zero extra apt packages required.
 
-    Install gscam2:
-        sudo apt install ros-${ROS_DISTRO}-gscam2
-    or build from source: https://github.com/clydemcqueen/gscam2
+    Published topics:
+        /csi_cam_0/image_raw     (sensor_msgs/Image, BGR8)
+        /csi_cam_0/camera_info   (sensor_msgs/CameraInfo)
 
-    For headless (SSH) usage, the camera publishes image_raw which can be
-    viewed on the laptop side via:
-        ros2 run rqt_image_view rqt_image_view
-    or with compressed transport:
-        ros2 run image_transport republish raw compressed --ros-args \\
-            -r in:=/csi_cam_0/image_raw -r out/compressed:=/csi_cam_0/image_compressed
+    View over SSH:
+        ros2 run jetracer web_camera_stream.py
+        → open http://<jetson-ip>:8080 in laptop browser
     """
 
     pkg_share = get_package_share_directory('jetracer')
 
-    # Declare arguments — matching ROS1 csi_camera.launch
-    sensor_id = LaunchConfiguration('sensor_id', default='0')
-    width = LaunchConfiguration('width', default='640')
-    height = LaunchConfiguration('height', default='480')
-    fps = LaunchConfiguration('fps', default='20')
-    flip_method = LaunchConfiguration('flip_method', default='0')
-    use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    # Camera calibration file
+    camera_info_url = 'file://' + os.path.join(
+        pkg_share, 'config', 'camera_calibration', 'cam_640x480.yaml')
 
+    # Declare arguments — matching ROS1 csi_camera.launch
     declare_sensor_id = DeclareLaunchArgument(
         'sensor_id', default_value='0',
         description='CSI camera sensor ID')
-
     declare_width = DeclareLaunchArgument(
         'width', default_value='640',
         description='Image width')
-
     declare_height = DeclareLaunchArgument(
         'height', default_value='480',
         description='Image height')
-
     declare_fps = DeclareLaunchArgument(
         'fps', default_value='20',
         description='Target framerate')
-
     declare_flip_method = DeclareLaunchArgument(
         'flip_method', default_value='0',
         description='nvvidconv flip method (0=none, 2=180deg)')
-
     declare_use_sim_time = DeclareLaunchArgument(
         'use_sim_time', default_value='false',
         description='Use simulation clock')
 
-    # GStreamer pipeline — identical to the original ROS1 gscam config.
-    # nvarguscamerasrc -> NV12 in NVMM memory -> nvvidconv (flip) -> videoconvert -> appsink
-    # The 'videoconvert' at the end lets gscam negotiate a format it can publish
-    # (typically BGR or RGB). This is the pipeline that produces correct colors.
-    gscam_config = (
-        'nvarguscamerasrc sensor-id=0 ! '
-        'video/x-raw(memory:NVMM), '
-        'width=(int)640, height=(int)480, '
-        'format=(string)NV12, framerate=(fraction)20/1 ! '
-        'nvvidconv flip-method=0 ! '
-        'videoconvert'
-    )
-
-    # Camera calibration file path
-    camera_info_url = 'file://' + os.path.join(
-        pkg_share, 'config', 'camera_calibration', 'cam_640x480.yaml')
-
-    # gscam2 node — the ROS2 equivalent of the ROS1 gscam node
-    gscam_node = Node(
-        package='gscam2',
-        executable='gscam_main',
+    # Custom camera node — uses OpenCV + GStreamer (nvarguscamerasrc)
+    camera_node = Node(
+        package='jetracer',
+        executable='csi_camera_node.py',
         name='csi_cam_0',
         output='screen',
         parameters=[{
-            'use_sim_time': use_sim_time,
-            'gscam_config': gscam_config,
-            'camera_name': 'csi_cam_0',
-            'camera_info_url': camera_info_url,
+            'sensor_id': LaunchConfiguration('sensor_id'),
+            'width': LaunchConfiguration('width'),
+            'height': LaunchConfiguration('height'),
+            'fps': LaunchConfiguration('fps'),
+            'flip_method': LaunchConfiguration('flip_method'),
             'frame_id': 'csi_cam_0_link',
-            'sync_sink': False,
-        }],
-        remappings=[
-            ('camera/image_raw', '/csi_cam_0/image_raw'),
-            ('camera/camera_info', '/csi_cam_0/camera_info'),
-        ]
+            'camera_info_url': camera_info_url,
+        }]
     )
 
     ld = LaunchDescription()
@@ -101,6 +72,6 @@ def generate_launch_description():
     ld.add_action(declare_fps)
     ld.add_action(declare_flip_method)
     ld.add_action(declare_use_sim_time)
-    ld.add_action(gscam_node)
+    ld.add_action(camera_node)
 
     return ld

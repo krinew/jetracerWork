@@ -38,10 +38,8 @@
   <!-- Sensor Processing -->
   <exec_depend>laser_filters</exec_depend>
   
-  <!-- Camera -->
-  <exec_depend>gscam2</exec_depend>
-  <exec_depend>image_transport</exec_depend>
-  <exec_depend>compressed_image_transport</exec_depend>
+  <!-- Camera (custom node using OpenCV+GStreamer, no extra apt packages needed) -->
+  <!-- Python deps: opencv (pre-installed on Jetson), PyYAML, sensor_msgs -->
   
   <!-- LiDAR Driver -->
   <exec_depend>rplidar_ros</exec_depend>

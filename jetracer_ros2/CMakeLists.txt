@@ -59,6 +59,7 @@ install(PROGRAMS
   scripts/odom_ekf.py
   scripts/calibrate_linear.py
   scripts/web_camera_stream.py
+  scripts/csi_camera_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
