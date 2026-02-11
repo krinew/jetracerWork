@@ -24,7 +24,7 @@
   
   <!-- SLAM Dependencies -->
   <exec_depend>slam_toolbox</exec_depend>
-  <!-- <exec_depend>cartographer_ros</exec_depend> -->
+  <exec_depend>cartographer_ros</exec_depend>
   
   <!-- Navigation Dependencies -->
   <exec_depend>nav2_bringup</exec_depend>
@@ -38,8 +38,10 @@
   <!-- Sensor Processing -->
   <exec_depend>laser_filters</exec_depend>
   
-  <!-- Camera (optional - uncomment if using) -->
-  <!-- <exec_depend>v4l2_camera</exec_depend> -->
+  <!-- Camera -->
+  <exec_depend>gscam2</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>compressed_image_transport</exec_depend>
   
   <!-- LiDAR Driver -->
   <exec_depend>rplidar_ros</exec_depend>

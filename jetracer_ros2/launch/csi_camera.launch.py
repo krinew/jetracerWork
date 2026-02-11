@@ -8,81 +8,99 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     """
-    Launch file for CSI camera
-    Note: You'll need to install appropriate ROS 2 camera drivers
-    Example uses image_publisher or v4l2_camera package
+    Launch file for CSI camera using gscam2 (ROS 2 port of gscam).
+    Mirrors the original ROS1 csi_camera.launch using nvarguscamerasrc pipeline.
+
+    Install gscam2:
+        sudo apt install ros-${ROS_DISTRO}-gscam2
+    or build from source: https://github.com/clydemcqueen/gscam2
+
+    For headless (SSH) usage, the camera publishes image_raw which can be
+    viewed on the laptop side via:
+        ros2 run rqt_image_view rqt_image_view
+    or with compressed transport:
+        ros2 run image_transport republish raw compressed --ros-args \\
+            -r in:=/csi_cam_0/image_raw -r out/compressed:=/csi_cam_0/image_compressed
     """
-    
-    # Declare arguments
+
+    pkg_share = get_package_share_directory('jetracer')
+
+    # Declare arguments — matching ROS1 csi_camera.launch
+    sensor_id = LaunchConfiguration('sensor_id', default='0')
+    width = LaunchConfiguration('width', default='640')
+    height = LaunchConfiguration('height', default='480')
+    fps = LaunchConfiguration('fps', default='20')
+    flip_method = LaunchConfiguration('flip_method', default='0')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
-    camera_device = LaunchConfiguration('camera_device', default='/dev/video0')
-    image_width = LaunchConfiguration('image_width', default='640')
-    image_height = LaunchConfiguration('image_height', default='480')
-    framerate = LaunchConfiguration('framerate', default='30')
-    
-    declare_use_sim_time_argument = DeclareLaunchArgument(
-        'use_sim_time',
-        default_value='false',
-        description='Use simulation/Gazebo clock'
+
+    declare_sensor_id = DeclareLaunchArgument(
+        'sensor_id', default_value='0',
+        description='CSI camera sensor ID')
+
+    declare_width = DeclareLaunchArgument(
+        'width', default_value='640',
+        description='Image width')
+
+    declare_height = DeclareLaunchArgument(
+        'height', default_value='480',
+        description='Image height')
+
+    declare_fps = DeclareLaunchArgument(
+        'fps', default_value='20',
+        description='Target framerate')
+
+    declare_flip_method = DeclareLaunchArgument(
+        'flip_method', default_value='0',
+        description='nvvidconv flip method (0=none, 2=180deg)')
+
+    declare_use_sim_time = DeclareLaunchArgument(
+        'use_sim_time', default_value='false',
+        description='Use simulation clock')
+
+    # GStreamer pipeline — identical to the original ROS1 gscam config.
+    # nvarguscamerasrc -> NV12 in NVMM memory -> nvvidconv (flip) -> videoconvert -> appsink
+    # The 'videoconvert' at the end lets gscam negotiate a format it can publish
+    # (typically BGR or RGB). This is the pipeline that produces correct colors.
+    gscam_config = (
+        'nvarguscamerasrc sensor-id=0 ! '
+        'video/x-raw(memory:NVMM), '
+        'width=(int)640, height=(int)480, '
+        'format=(string)NV12, framerate=(fraction)20/1 ! '
+        'nvvidconv flip-method=0 ! '
+        'videoconvert'
     )
-    
-    declare_camera_device = DeclareLaunchArgument(
-        'camera_device',
-        default_value='/dev/video0',
-        description='Camera device path'
-    )
-    
-    declare_image_width = DeclareLaunchArgument(
-        'image_width',
-        default_value='640',
-        description='Image width'
-    )
-    
-    declare_image_height = DeclareLaunchArgument(
-        'image_height',
-        default_value='480',
-        description='Image height'
-    )
-    
-    declare_framerate = DeclareLaunchArgument(
-        'framerate',
-        default_value='30',
-        description='Camera framerate'
-    )
-    
-    # V4L2 Camera node (install ros-jazzy-v4l2-camera)
-    # Alternative: use gscam or other camera drivers compatible with Jetson
-    camera_node = Node(
-        package='v4l2_camera',
-        executable='v4l2_camera_node',
-        name='v4l2_camera',
+
+    # Camera calibration file path
+    camera_info_url = 'file://' + os.path.join(
+        pkg_share, 'config', 'camera_calibration', 'cam_640x480.yaml')
+
+    # gscam2 node — the ROS2 equivalent of the ROS1 gscam node
+    gscam_node = Node(
+        package='gscam2',
+        executable='gscam_main',
+        name='csi_cam_0',
         output='screen',
-        parameters=[
-            {
-                'use_sim_time': use_sim_time,
-                'video_device': camera_device,
-                'image_size': [640, 480],  # Matched to ROS1 launch default
-                'camera_frame_id': 'camera_link',
-                'io_method': 'mmap',
-                'pixel_format': 'UYVY' # Forced YUYV as per ROS1 behavior
-            }
-        ],
+        parameters=[{
+            'use_sim_time': use_sim_time,
+            'gscam_config': gscam_config,
+            'camera_name': 'csi_cam_0',
+            'camera_info_url': camera_info_url,
+            'frame_id': 'csi_cam_0_link',
+            'sync_sink': False,
+        }],
         remappings=[
-            ('/image_raw', '/camera/image_raw'),
-            ('/camera_info', '/camera/camera_info')
+            ('camera/image_raw', '/csi_cam_0/image_raw'),
+            ('camera/camera_info', '/csi_cam_0/camera_info'),
         ]
     )
-    
+
     ld = LaunchDescription()
-    
-    # Add arguments
-    ld.add_action(declare_use_sim_time_argument)
-    ld.add_action(declare_camera_device)
-    ld.add_action(declare_image_width)
-    ld.add_action(declare_image_height)
-    ld.add_action(declare_framerate)
-    
-    # Add nodes
-    ld.add_action(camera_node)
-    
+    ld.add_action(declare_sensor_id)
+    ld.add_action(declare_width)
+    ld.add_action(declare_height)
+    ld.add_action(declare_fps)
+    ld.add_action(declare_flip_method)
+    ld.add_action(declare_use_sim_time)
+    ld.add_action(gscam_node)
+
     return ld

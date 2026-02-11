@@ -48,6 +48,14 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items()
     )
     
+    # Include CSI camera launch (matches ROS1 slam.launch which includes csi_camera.launch)
+    camera_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_share, 'launch', 'csi_camera.launch.py')
+        ),
+        launch_arguments={'use_sim_time': use_sim_time}.items()
+    )
+    
     # Conditionally include SLAM Toolbox
     slam_toolbox_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -84,6 +92,7 @@ def generate_launch_description():
     # Add launch files
     ld.add_action(jetracer_launch)
     ld.add_action(lidar_launch)
+    ld.add_action(camera_launch)
     ld.add_action(slam_toolbox_launch)
     ld.add_action(cartographer_launch)
     ld.add_action(hector_launch)

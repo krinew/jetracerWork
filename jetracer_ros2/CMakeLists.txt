@@ -48,7 +48,11 @@ install(TARGETS jetracer
 
 # Install launch files
 install(DIRECTORY launch config maps
-  DESTINATION share/${PROJECT_NAME}/)
+  DESTINATION share/${PROJECT_NAME}/
+)
+
+# Install camera_calibration and cartographer config
+# (these are subdirectories of config/ and are installed automatically above)
 
 # Install Python scripts
 install(PROGRAMS
