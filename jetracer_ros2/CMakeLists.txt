@@ -58,6 +58,7 @@ install(DIRECTORY launch config maps
 install(PROGRAMS
   scripts/odom_ekf.py
   scripts/calibrate_linear.py
+  scripts/web_camera_stream.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
