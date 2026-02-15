@@ -24,6 +24,7 @@ def generate_launch_description():
     # Declare arguments
     slam_method = LaunchConfiguration('slam_method', default='slam_toolbox')
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
+    enable_camera = LaunchConfiguration('enable_camera', default='false')
     params_file = LaunchConfiguration('params_file',
         default=os.path.join(pkg_share, 'config', 'nav2_params.yaml'))
     
@@ -39,20 +40,27 @@ def generate_launch_description():
         description='Use simulation/Gazebo clock'
     )
 
+    declare_enable_camera_cmd = DeclareLaunchArgument(
+        'enable_camera',
+        default_value='false',
+        description='Enable CSI camera node (requires Tegra libs in Docker)'
+    )
+
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
         default_value=os.path.join(pkg_share, 'config', 'nav2_params.yaml'),
         description='Full path to the Nav2 parameters file'
     )
     
-    # Include SLAM launch (which includes jetracer, lidar, and camera)
+    # Include SLAM launch (which includes jetracer, lidar, and optionally camera)
     slam_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_share, 'launch', 'slam.launch.py')
         ),
         launch_arguments={
             'slam_method': slam_method,
-            'use_sim_time': use_sim_time
+            'use_sim_time': use_sim_time,
+            'enable_camera': enable_camera
         }.items()
     )
     
@@ -76,6 +84,7 @@ def generate_launch_description():
     # Add arguments
     ld.add_action(declare_slam_method_cmd)
     ld.add_action(declare_use_sim_time_argument)
+    ld.add_action(declare_enable_camera_cmd)
     ld.add_action(declare_params_file_cmd)
     
     # Add launch files

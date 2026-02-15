@@ -19,6 +19,7 @@ def generate_launch_description():
     # Declare arguments
     slam_method = LaunchConfiguration('slam_method')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    enable_camera = LaunchConfiguration('enable_camera')
     
     declare_slam_method_cmd = DeclareLaunchArgument(
         'slam_method',
@@ -30,6 +31,12 @@ def generate_launch_description():
         'use_sim_time',
         default_value='false',
         description='Use simulation/Gazebo clock'
+    )
+    
+    declare_enable_camera_cmd = DeclareLaunchArgument(
+        'enable_camera',
+        default_value='false',
+        description='Enable CSI camera node (requires Tegra libs in Docker)'
     )
     
     # Include jetracer base launch
@@ -48,12 +55,13 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': use_sim_time}.items()
     )
     
-    # Include CSI camera launch (matches ROS1 slam.launch which includes csi_camera.launch)
+    # Include CSI camera launch (optional — requires Tegra libs mounted in Docker)
     camera_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_share, 'launch', 'csi_camera.launch.py')
         ),
-        launch_arguments={'use_sim_time': use_sim_time}.items()
+        launch_arguments={'use_sim_time': use_sim_time}.items(),
+        condition=IfCondition(enable_camera)
     )
     
     # Conditionally include SLAM Toolbox
@@ -88,6 +96,7 @@ def generate_launch_description():
     # Add arguments
     ld.add_action(declare_slam_method_cmd)
     ld.add_action(declare_use_sim_time_argument)
+    ld.add_action(declare_enable_camera_cmd)
     
     # Add launch files
     ld.add_action(jetracer_launch)
