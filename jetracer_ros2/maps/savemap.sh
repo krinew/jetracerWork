@@ -7,7 +7,7 @@ MAP_NAME="${1:-mymap}"
 MAP_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Saving map as: ${MAP_DIR}/${MAP_NAME}"
-ros2 run nav2_map_server map_saver_cli -f "${MAP_DIR}/${MAP_NAME}" --ros-args -p save_map_timeout:=10000
+ros2 run nav2_map_server map_saver_cli -f "${MAP_DIR}/${MAP_NAME}" --ros-args -p save_map_timeout:=10000.0
 
 if [ $? -eq 0 ]; then
     echo "Map saved successfully: ${MAP_DIR}/${MAP_NAME}.yaml and ${MAP_DIR}/${MAP_NAME}.pgm"
