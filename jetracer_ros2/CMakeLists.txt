@@ -60,6 +60,7 @@ install(PROGRAMS
   scripts/calibrate_linear.py
   scripts/web_camera_stream.py
   scripts/csi_camera_node.py
+  scripts/multipoint_nav.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

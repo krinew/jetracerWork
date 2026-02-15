@@ -1,17 +1,18 @@
 # JetRacer ROS2 Migration Summary
 
-**Date**: January 23, 2026  
+**Date**: January 23, 2026 (updated February 15, 2026)  
 **Migration**: ROS 1 → ROS 2 Jazzy
 
 ## ✅ COMPLETED MIGRATION
 
 ### 📁 Files Created/Updated
 
-#### Python Scripts (3 files)
+#### Python Scripts (4 files)
 
 1. ✅ `scripts/odom_ekf.py` - Updated with parameters and rclpy
 2. ✅ `scripts/calibrate_linear.py` - Fully migrated with parameter callbacks
 3. ✅ `scripts/web_camera_stream.py` - **NEW** Browser MJPEG camera stream (for SSH/headless use)
+4. ✅ `scripts/multipoint_nav.py` - **NEW** Multi-waypoint patrol navigation (ported from ROS1)
 
 #### Launch Files (11 files)
 
@@ -28,7 +29,7 @@
 11. ✅ `launch/calibrate_linear.launch.py` - **NEW**
 12. ✅ `launch/csi_camera.launch.py` - **NEW**
 
-#### Configuration Files (7 files)
+#### Configuration Files (8 files)
 
 1. ✅ `config/jetracer.yaml` - Already existed
 2. ✅ `config/nav2_params.yaml` - Already existed
@@ -37,6 +38,7 @@
 5. ✅ `config/laser_filter_params.yaml` - **NEW**
 6. ✅ `config/cartographer/jetracer.lua` - **NEW** (copied from ROS1)
 7. ✅ `config/camera_calibration/cam_640x480.yaml` - **NEW** (copied from ROS1)
+8. ✅ `config/nav2_view.rviz` - **NEW** Pre-configured rviz2 layout for navigation
 
 #### Package Files (3 files)
 
@@ -50,23 +52,25 @@
 
 ### From ROS1 Package:
 
-| ROS1 Feature      | ROS2 Status | Notes                      |
-| ----------------- | ----------- | -------------------------- |
-| **Core Driver**   | ✅ Complete | Already migrated           |
-| **Odometry EKF**  | ✅ Complete | Migrated to rclpy          |
-| **Calibration**   | ✅ Complete | Migrated to rclpy          |
-| **Gmapping SLAM** | ✅ Replaced | Now uses slam_toolbox      |
-| **Karto SLAM**    | ✅ Replaced | Now uses slam_toolbox      |
-| **Cartographer**  | ✅ Complete | Migrated launch file       |
-| **Hector SLAM**   | ✅ Complete | Migrated launch file       |
-| **AMCL**          | ✅ Complete | Uses Nav2 AMCL             |
-| **Move Base**     | ✅ Replaced | Now uses Nav2              |
-| **Laser Filter**  | ✅ Complete | New launch + config        |
-| **LiDAR**         | ✅ Complete | Already migrated           |
-| **Camera**        | ✅ Complete | gscam2 with nvarguscamerasrc (matches ROS1 gscam pipeline) |
-| **Audio/TTS**     | ⚠️ Optional | Not migrated (rarely used) |
+| ROS1 Feature      | ROS2 Status | Notes                                                   |
+| ----------------- | ----------- | ------------------------------------------------------- |
+| **Core Driver**   | ✅ Complete | Already migrated                                        |
+| **Odometry EKF**  | ✅ Complete | Migrated to rclpy                                       |
+| **Calibration**   | ✅ Complete | Migrated to rclpy                                       |
+| **Gmapping SLAM** | ✅ Replaced | Now uses slam_toolbox                                   |
+| **Karto SLAM**    | ✅ Replaced | Now uses slam_toolbox                                   |
+| **Cartographer**  | ✅ Complete | Migrated launch file                                    |
+| **Hector SLAM**   | ✅ Complete | Migrated launch file                                    |
+| **AMCL**          | ✅ Complete | Uses Nav2 AMCL                                          |
+| **Move Base**     | ✅ Replaced | Now uses Nav2 (+ multipoint_nav.py for waypoint patrol) |
+| **Laser Filter**  | ✅ Complete | New launch + config                                     |
+| **LiDAR**         | ✅ Complete | Already migrated                                        |
+| **Camera**        | ✅ Complete | Custom OpenCV+GStreamer node (nvarguscamerasrc)         |
+| **Map Saving**    | ✅ Complete | savemap.sh and carto_savemap.sh updated for ROS2        |
+| **rviz Configs**  | ✅ Complete | nav2_view.rviz for navigation visualization             |
+| **Audio/TTS**     | ⚠️ Optional | Not migrated (rarely used)                              |
 
-### Overall: **95% Complete**
+### Overall: **98% Complete**
 
 ---
 
@@ -146,7 +150,24 @@ ros2 launch jetracer slam.launch.py
 ### Run Navigation
 
 ```bash
+# With pre-saved map:
 ros2 launch jetracer nav.launch.py map:=/path/to/map.yaml
+
+# SLAM + Navigation combined:
+ros2 launch jetracer slam_nav.launch.py
+
+# Multi-point patrol (requires nav stack running):
+ros2 run jetracer multipoint_nav.py
+
+# Save map after SLAM:
+cd ~/jetracerWork/src/jetracer_ros2/maps && ./savemap.sh
+```
+
+### Visualization (on PC/VM, not on Jetson)
+
+```bash
+export ROS_DOMAIN_ID=0   # must match Jetson
+rviz2 -d $(ros2 pkg prefix jetracer)/share/jetracer/config/nav2_view.rviz
 ```
 
 ---
@@ -158,8 +179,7 @@ The following ROS1 features were **NOT** migrated as they are rarely used:
 1. ❌ Audio scripts (`aiui.py`, `ginput.py`, `iat.py`, `vad.py`)
 2. ❌ TTS scripts (`tts_cn.py`, `tts_en.py`)
 3. ❌ Audio launch files (4 files)
-4. ❌ Multi-point navigation script
-5. ❌ Capture/Play launch files
+4. ❌ Capture/Play launch files
 
 **Reason**: These are specialized features that:
 
@@ -188,8 +208,11 @@ Before deploying, test the following:
 ### Navigation
 
 - [ ] `ros2 launch jetracer nav.launch.py` - Nav2 starts
-- [ ] Set goal in RViz2 - Robot navigates
+- [ ] Set goal in rviz2 - Robot navigates
 - [ ] Obstacle avoidance works
+- [ ] `ros2 run jetracer multipoint_nav.py` - Waypoint patrol works
+- [ ] Multi-point loop navigation cycles correctly
+- [ ] Save map with `./savemap.sh`
 
 ### Sensors
 

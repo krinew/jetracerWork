@@ -29,8 +29,11 @@
   <!-- Navigation Dependencies -->
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>navigation2</exec_depend>
-  <exec_depend>nav2_bringup</exec_depend> 
   <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>nav2_msgs</exec_depend>
+  
+  <!-- Visualization -->
+  <exec_depend>visualization_msgs</exec_depend>
   
   <!-- Localization -->
   <exec_depend>robot_localization</exec_depend>
