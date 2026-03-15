@@ -6,7 +6,7 @@ import time
 
 # Ensure the submodule is in the Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../jetcam'))
-from jetcam.usb_camera import USBCamera
+from jetcam.csi_camera import CSICamera
 
 def update_image(change):
     image = change['new']
@@ -14,9 +14,8 @@ def update_image(change):
     cv2.imshow('CSI Camera Test', image)
     cv2.waitKey(1)
 def test_csi(sensor_id,flip_method,wwidth,height,fps):
-    # Fallback to V4L2 (USBCamera) to bypass broken Jetson Docker NV-Argus bindings
-    cam = USBCamera(capture_device=sensor_id, width=wwidth, height=height)
-    print(f"V4L2 Camera initialized with device /dev/video{sensor_id}, width={wwidth}, height={height}")
+    cam = CSICamera(sensor_id=sensor_id, flip_method=flip_method, width=wwidth, height=height, fps=fps)
+    print(f"Camera initialized with sensor_id={sensor_id}, flip_method={flip_method}, width={wwidth}, height={height}, fps={fps}")
     print("Press Ctrl+C to exit")
     try:
         

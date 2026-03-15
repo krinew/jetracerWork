@@ -1,12 +1,11 @@
 # JetRacer ROS 2 Package
 
-ROS 2 (Jazzy) package for NVIDIA JetRacer autonomous robot. Supports SLAM, navigation, odometry fusion, and multi-sensor integration.
+ROS 2 (Humble) package for NVIDIA JetRacer autonomous robot. Supports SLAM, navigation, odometry fusion, and multi-sensor integration.
 
-## Connecting a Client Laptop to the JetRacer ROS 2 Network
+## Setup
 
-Ensure both the Jetson and your Laptop are connected to the **same Wi-Fi network**.
+### 1. Install ROS 2 Humble
 
-**On your Laptop (Terminal 1):**
 ```bash
 # 1. Install ROS 2 Jazzy first, then run:
 source /opt/ros/jazzy/setup.bash
@@ -34,13 +33,13 @@ Follow the official [ROS 2 Jazzy Installation Guide](https://docs.ros.org/en/jaz
 sudo apt update
 sudo apt install -y \
   python3-colcon-common-extensions \
-  ros-jazzy-slam-toolbox \
-  ros-jazzy-cartographer-ros \
-  ros-jazzy-nav2-bringup \
-  ros-jazzy-nav2-amcl \
-  ros-jazzy-robot-localization \
-  ros-jazzy-laser-filters \
-  ros-jazzy-rplidar-ros
+  ros-humble-slam-toolbox \
+  ros-humble-cartographer-ros \
+  ros-humble-nav2-bringup \
+  ros-humble-nav2-amcl \
+  ros-humble-robot-localization \
+  ros-humble-laser-filters \
+  ros-humble-rplidar-ros
 ```
 
 ### 3. Build Package
@@ -498,8 +497,13 @@ This package has been fully migrated from ROS 1 to ROS 2 following official migr
 
 ## License
 
-MIT License
+[Specify your license here]
+
+## Authors & Contributors
+
+[Original ROS 1 package credits]
+ROS 2 Migration: 2026-01-23
 
 ## Support
 
-For issues, questions, or contributions, please open an issue in the repository.
+For issues, questions, or contributions, please [specify contact method or repository].
