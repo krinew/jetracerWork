@@ -498,13 +498,8 @@ This package has been fully migrated from ROS 1 to ROS 2 following official migr
 
 ## License
 
-[Specify your license here]
-
-## Authors & Contributors
-
-[Original ROS 1 package credits]
-ROS 2 Migration: 2026-01-23
+MIT License
 
 ## Support
 
-For issues, questions, or contributions, please [specify contact method or repository].
+For issues, questions, or contributions, please open an issue in the repository.
