@@ -21,6 +21,7 @@ Parameters:
 """
 
 import os
+import sys
 import yaml
 
 import cv2
@@ -31,6 +32,12 @@ from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 from sensor_msgs.msg import Image, CameraInfo
 from builtin_interfaces.msg import Time
 
+# Ensure the jetcam submodule is in the Python path
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../jetcam'))
+try:
+    from jetcam.csi_camera import CSICamera
+except ImportError:
+    pass  # We will handle this error inside the node's init
 
 class CSICameraNode(Node):
     def __init__(self):
@@ -53,35 +60,22 @@ class CSICameraNode(Node):
         self.frame_id = self.get_parameter('frame_id').value
         camera_info_url = self.get_parameter('camera_info_url').value
 
-        # Build GStreamer pipeline — identical to ROS1 gscam config
-        self.pipeline = (
-            f'nvarguscamerasrc sensor-id={self.sensor_id} ! '
-            f'video/x-raw(memory:NVMM), '
-            f'width=(int){self.width}, height=(int){self.height}, '
-            f'format=(string)NV12, framerate=(fraction){self.fps}/1 ! '
-            f'nvvidconv flip-method={self.flip_method} ! '
-            f'video/x-raw, format=(string)BGRx ! '
-            f'videoconvert ! '
-            f'video/x-raw, format=(string)BGR ! '
-            f'appsink drop=1'
-        )
-
-        self.get_logger().info(f'GStreamer pipeline: {self.pipeline}')
-
-        # Open capture
-        self.cap = cv2.VideoCapture(self.pipeline, cv2.CAP_GSTREAMER)
-        if not self.cap.isOpened():
-            self.get_logger().error(
-                'Failed to open camera! Check that nvarguscamerasrc is available '
-                'and the CSI camera is connected.')
-            self.get_logger().error(
-                'Test with: gst-launch-1.0 nvarguscamerasrc ! fakesink')
+        # Initialize JetCam CSI Camera
+        try:
+            self.camera = CSICamera(
+                capture_device=self.sensor_id,
+                flip_method=self.flip_method,
+                width=self.width,
+                height=self.height,
+                capture_fps=self.fps
+            )
+            self.get_logger().info(
+                f'JetCam CSI Camera initialized: sensor_id={self.sensor_id} '
+                f'{self.width}x{self.height}@{self.fps}fps '
+                f'flip={self.flip_method}')
+        except Exception as e:
+            self.get_logger().error(f'Failed to initialize camera! Check connection. Error: {e}')
             raise RuntimeError('Cannot open CSI camera')
-
-        self.get_logger().info(
-            f'Camera opened: sensor_id={self.sensor_id} '
-            f'{self.width}x{self.height}@{self.fps}fps '
-            f'flip={self.flip_method}')
 
         # QoS for image (best effort, keep last 1 — standard for camera topics)
         qos = QoSProfile(
@@ -99,12 +93,17 @@ class CSICameraNode(Node):
 
         # Timer at target FPS
         period = 1.0 / self.fps
-        self.timer = self.create_timer(period, self._timer_callback)
         self.frame_count = 0
+        
+        # Start Jetcam background capture thread
+        self.camera.running = True
+        self.timer = self.create_timer(period, self._timer_callback)
 
     def _timer_callback(self):
-        ret, frame = self.cap.read()
-        if not ret:
+        # Directly grab the latest property value from observation thread
+        frame = self.camera.value
+        
+        if frame is None:
             self.get_logger().warn('Failed to read frame', throttle_duration_sec=5.0)
             return
 
@@ -175,8 +174,8 @@ class CSICameraNode(Node):
             return None
 
     def destroy_node(self):
-        if self.cap is not None:
-            self.cap.release()
+        if hasattr(self, 'camera'):
+            self.camera.running = False
         super().destroy_node()
 
 
