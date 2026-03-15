@@ -1,15 +1,32 @@
 # JetRacer ROS 2 Package
 
-ROS 2 (Humble) package for NVIDIA JetRacer autonomous robot. Supports SLAM, navigation, odometry fusion, and multi-sensor integration.
+ROS 2 (Jazzy) package for NVIDIA JetRacer autonomous robot. Supports SLAM, navigation, odometry fusion, and multi-sensor integration.
+
+## Connecting a Client Laptop to the JetRacer ROS 2 Network
+
+Ensure both the Jetson and your Laptop are connected to the **same Wi-Fi network**.
+
+**On your Laptop (Terminal 1):**
+```bash
+# 1. Install ROS 2 Jazzy first, then run:
+source /opt/ros/jazzy/setup.bash
+export ROS_DOMAIN_ID=0  # Must match the Jetson's ID (Default is 0)
+
+# 2. Verify connection
+ros2 topic list
+```
+
+**To Collect Images Remotely:**
+```bash
+python3 jetracer_ros2/scripts/client_tools/client_data_collector.py
+```
+---
 
 ## Setup
 
-### 1. Install ROS 2 Humble
+### 1. Install ROS 2 Jazzy
 
-```bash
-curl -sSL https://raw.githubusercontent.com/ros/ros-setup-scripts/master/ros-humble-setup.sh | bash
-source /opt/ros/humble/setup.bash
-```
+Follow the official [ROS 2 Jazzy Installation Guide](https://docs.ros.org/en/jazzy/Installation.html) for your operating system.
 
 ### 2. Install Dependencies
 
@@ -17,13 +34,13 @@ source /opt/ros/humble/setup.bash
 sudo apt update
 sudo apt install -y \
   python3-colcon-common-extensions \
-  ros-humble-slam-toolbox \
-  ros-humble-cartographer-ros \
-  ros-humble-nav2-bringup \
-  ros-humble-nav2-amcl \
-  ros-humble-robot-localization \
-  ros-humble-laser-filters \
-  ros-humble-rplidar-ros
+  ros-jazzy-slam-toolbox \
+  ros-jazzy-cartographer-ros \
+  ros-jazzy-nav2-bringup \
+  ros-jazzy-nav2-amcl \
+  ros-jazzy-robot-localization \
+  ros-jazzy-laser-filters \
+  ros-jazzy-rplidar-ros
 ```
 
 ### 3. Build Package
